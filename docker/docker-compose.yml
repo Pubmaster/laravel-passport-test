@@ -1,0 +1,53 @@
+version: '3'
+services:
+  nginx:
+    build:
+      context: ./nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ../:/var/www
+    restart: on-failure
+    links:
+      - app
+
+  app:
+    build:
+      context: ./app
+    volumes:
+      - ../:/var/www
+    restart: on-failure
+    environment:
+      XDEBUG_CONFIG: remote_host=192.168.99.1
+    depends_on:
+      - pgsql
+    links:
+      - pgsql
+
+  pgsql:
+    image: postgres:10.5-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - /data/passport/pgsql:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: passport
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: nopassword
+    restart: on-failure
+
+  composer:
+    build:
+      context: ./composer
+    restart: 'no'
+    command: 'composer'
+    volumes:
+      - ../:/var/www
+
+  npm:
+    build:
+      context: ./npm
+    restart: 'no'
+    command: bash -c 'npm install --no-bin-link && npm run dev'
+    volumes:
+      - ../:/var/www
