@@ -14,11 +14,10 @@ services:
   app:
     build:
       context: ./app
+    env_file: ./app/.env
     volumes:
       - ../:/var/www
     restart: on-failure
-    environment:
-      XDEBUG_CONFIG: remote_host=192.168.99.1
     depends_on:
       - pgsql
     links:
